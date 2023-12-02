@@ -5,13 +5,21 @@ import { setHookFormData } from '../redux/store';
 import { RootState } from '../redux/store';
 
 interface FormData {
-  firstName: string;
-  lastName: string;
+  name: string;
+  age: number;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  gender: string;
+  agreeTerms: boolean;
+  country: string;
+  image: string;
 }
 
 const HookForm: React.FC = () => {
   const dispatch = useDispatch();
   const hookFormData = useSelector((state: RootState) => state.hookFormData);
+  const countries = useSelector((state: RootState) => state.countries);
   const { register, handleSubmit } = useForm<FormData>();
 
   const onSubmit: SubmitHandler<FormData> = (data) => {
@@ -21,28 +29,105 @@ const HookForm: React.FC = () => {
   return (
     <div>
       <h2>Hook Form</h2>
-      <p>This is a form created with the help of React Hook Form.</p>
       <form onSubmit={handleSubmit(onSubmit)}>
         <div>
-          <label htmlFor="firstName">First Name:</label>
+          <label htmlFor="name">Name:</label>
           <input
             type="text"
-            id="firstName"
-            {...register('firstName', { required: 'First Name is required' })}
-            defaultValue={hookFormData.firstName}
+            id="name"
+            {...register('name', { required: 'Name is required' })}
+            defaultValue={hookFormData.name}
           />
         </div>
         <div>
-          <label htmlFor="lastName">Last Name:</label>
+          <label htmlFor="age">Age:</label>
           <input
-            type="text"
-            id="lastName"
-            {...register('lastName', { required: 'Last Name is required' })}
-            defaultValue={hookFormData.lastName}
+            type="number"
+            id="age"
+            {...register('age', { required: 'Age is required', min: 0 })}
+            defaultValue={hookFormData.age}
           />
         </div>
-        <button type="submit">Submit</button>
+        <div>
+          <label htmlFor="email">Email:</label>
+          <input
+            type="text"
+            id="email"
+            {...register('email', { required: 'Email is required' })}
+            defaultValue={hookFormData.email}
+          />
+        </div>
+        <div>
+          <label htmlFor="password">Password:</label>
+          <input
+            type="password"
+            id="password"
+            {...register('password', { required: 'Password is required' })}
+            defaultValue={hookFormData.password}
+          />
+        </div>
+        <div>
+          <label htmlFor="confirmPassword">Confirm Password:</label>
+          <input
+            type="password"
+            id="confirmPassword"
+            {...register('confirmPassword', { required: 'Confirm Password is required' })}
+            defaultValue={hookFormData.confirmPassword}
+          />
+        </div>
+        <div>
+          <label htmlFor="gender">Gender:</label>
+          <div>
+            <input
+              type="radio"
+              id="male"
+              value="male"
+              {...register('gender', { required: 'Gender is required' })}
+              defaultChecked={hookFormData.gender === 'male'}
+            />
+            <label htmlFor="male">Male</label>
+          </div>
+          <div>
+            <input
+              type="radio"
+              id="female"
+              value="female"
+              {...register('gender', { required: 'Gender is required' })}
+              defaultChecked={hookFormData.gender === 'female'}
+            />
+            <label htmlFor="female">Female</label>
+          </div>
+        </div>
+        <div>
+          <label htmlFor="agreeTerms">
+            <input
+              type="checkbox"
+              id="agreeTerms"
+              {...register('agreeTerms', { required: 'You must agree to the terms' })}
+              defaultChecked={hookFormData.agreeTerms}
+            />
+            Agree to Terms
+          </label>
+        </div>
+        <div>
+          <label htmlFor="country">Country:</label>
+          <select
+            id="country"
+            {...register('country', { required: 'Country is required' })}
+            defaultValue={hookFormData.country}
+          >
+            {countries.map((country) => (
+              <option key={country} value={country}>
+                {country}
+              </option>
+            ))}
+          </select>
+        </div>
       </form>
+      <input type="file" {...register('image')} accept=".png, .jpeg, .jpg" />
+      <div>
+        <button type="submit">Submit</button>
+      </div>
     </div>
   );
 };
