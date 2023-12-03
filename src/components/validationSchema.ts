@@ -17,11 +17,10 @@ export const schema = yup.object().shape({
   confirmPassword: yup
     .string()
     .required('Confirm Password is required')
-    .oneOf([yup.ref('password')], 'Passwords must match'),
+    .oneOf([yup.ref('password')], 'Passwords must match' as const),
   gender: yup.string().required('Gender is required'),
   agreeTerms: yup.boolean().oneOf([true], 'You must agree to the terms'),
   country: yup.string().required('Country is required'),
-
   image: yup
     .mixed()
     .test('fileSize', 'File size is too large', (value) => {

@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm, SubmitHandler, FieldValues } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
 import { setHookFormData } from '../redux/store';
 import { RootState } from '../redux/store';
 import * as yup from 'yup';
 import { schema } from './validationSchema';
+import { useNavigate } from 'react-router-dom';
 
 interface FormData {
   name: string;
@@ -19,6 +20,8 @@ interface FormData {
 }
 const HookForm: React.FC = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const [previewImage, setPreviewImage] = useState<string>('');
   const hookFormData = useSelector((state: RootState) => state.hookFormData);
   const countries = useSelector((state: RootState) => state.countries);
   const {
@@ -27,6 +30,7 @@ const HookForm: React.FC = () => {
     setValue,
     formState: { errors },
     setError,
+    trigger,
   } = useForm<FormData>({
     resolver: async (data: FieldValues) => {
       try {
@@ -53,8 +57,37 @@ const HookForm: React.FC = () => {
   });
 
   const onSubmit: SubmitHandler<FormData> = (data) => {
-    dispatch(setHookFormData(data));
+    const image = previewImage || '';
+    dispatch(setHookFormData({ ...data, image }));
+    navigate('/');
   };
+  const handlePictureChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+
+    if (file) {
+      const reader = new FileReader();
+
+      reader.onloadend = () => {
+        const base64Image = reader.result as string;
+        setPreviewImage(base64Image);
+        setValue('image', base64Image);
+        trigger('image');
+      };
+
+      reader.readAsDataURL(file);
+    }
+  };
+
+  useEffect(() => {
+    setValue('image', previewImage);
+    trigger('image');
+  }, [previewImage, setValue, trigger]);
+
+  const makeInputChange =
+    (fieldName: keyof FormData) => (e: React.ChangeEvent<HTMLInputElement>) => {
+      setValue(fieldName, e.target.value);
+      trigger(fieldName);
+    };
 
   return (
     <div>
@@ -80,20 +113,7 @@ const HookForm: React.FC = () => {
         </div>
         <div>
           <label htmlFor="age">Age:</label>
-          <input
-            type="number"
-            id="age"
-            {...register('age', { required: 'Age is required', min: 0 })}
-            defaultValue={hookFormData.age}
-            onChange={(e) => {
-              setValue('age', parseInt(e.target.value, 10));
-              schema
-                .validateAt('age', { age: e.target.value })
-                .then(() => setError('age', { type: 'manual', message: '' }))
-                .catch((err) => setError('age', { type: 'manual', message: err.message }));
-            }}
-            className={errors.age ? 'error' : ''}
-          />
+          <input type="number" {...register('age')} onChange={makeInputChange('age')} />
           {errors.age && <p className="error-message">{errors.age.message}</p>}
         </div>
         <div>
@@ -116,39 +136,15 @@ const HookForm: React.FC = () => {
         </div>
         <div>
           <label htmlFor="password">Password:</label>
-          <input
-            type="password"
-            id="password"
-            {...register('password', { required: 'Password is required' })}
-            defaultValue={hookFormData.password}
-            onChange={(e) => {
-              setValue('password', e.target.value);
-              schema
-                .validateAt('password', { password: e.target.value })
-                .then(() => setError('password', { type: 'manual', message: '' }))
-                .catch((err) => setError('password', { type: 'manual', message: err.message }));
-            }}
-            className={errors.password ? 'error' : ''}
-          />
+          <input type="password" {...register('password')} onChange={makeInputChange('password')} />
           {errors.password && <p className="error-message">{errors.password.message}</p>}
         </div>
         <div>
           <label htmlFor="confirmPassword">Confirm Password:</label>
           <input
             type="password"
-            id="confirmPassword"
-            {...register('confirmPassword', { required: 'Confirm Password is required' })}
-            defaultValue={hookFormData.confirmPassword}
-            onChange={(e) => {
-              setValue('confirmPassword', e.target.value);
-              schema
-                .validateAt('confirmPassword', { confirmPassword: e.target.value })
-                .then(() => setError('confirmPassword', { type: 'manual', message: '' }))
-                .catch((err) =>
-                  setError('confirmPassword', { type: 'manual', message: err.message })
-                );
-            }}
-            className={errors.confirmPassword ? 'error' : ''}
+            {...register('confirmPassword')}
+            onChange={makeInputChange('confirmPassword')}
           />
           {errors.confirmPassword && (
             <p className="error-message">{errors.confirmPassword.message}</p>
@@ -236,23 +232,14 @@ const HookForm: React.FC = () => {
         </div>
         <div>
           <label htmlFor="image">Upload Image:</label>
-          <input
-            type="file"
-            {...register('image')}
-            accept=".png, .jpeg, .jpg"
-            className={errors.image ? 'error' : ''}
-            onChange={(e) => {
-              const imageFile = e.target.files?.[0];
-              if (imageFile) {
-                const imageUrl = URL.createObjectURL(imageFile);
-                setValue('image', imageUrl);
-              }
-              schema
-                .validateAt('image', { image: e.target.files })
-                .then(() => setError('image', { type: 'manual', message: '' }))
-                .catch((err) => setError('image', { type: 'manual', message: err.message }));
-            }}
-          />
+          <input type="file" {...register('image')} onChange={handlePictureChange} />
+          {previewImage && (
+            <img
+              src={previewImage}
+              alt="Preview"
+              style={{ maxWidth: '100px', maxHeight: '100px' }}
+            />
+          )}
           {errors.image && <p className="error-message">{errors.image.message}</p>}
         </div>
         <div>

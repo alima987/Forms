@@ -15,6 +15,7 @@ interface FormState {
 export interface RootState {
   uncontrolledFormData: FormState;
   hookFormData: FormState;
+  hookFormSubmitData: FormState; // Добавлен новый срез
   countries: string[];
 }
 
@@ -49,7 +50,18 @@ const hookFormSlice = createSlice({
     },
   },
 });
-const countriesSlice = createSlice({
+
+const hookFormSubmitDataSlice = createSlice({
+  name: 'hookFormSubmitData',
+  initialState,
+  reducers: {
+    setHookFormSubmitData: (state, action: PayloadAction<Partial<FormState>>) => {
+      Object.assign(state, action.payload);
+    },
+  },
+});
+
+export const countriesSlice = createSlice({
   name: 'countries',
   initialState: [
     'Afghanistan',
@@ -307,11 +319,13 @@ const countriesSlice = createSlice({
 
 export const { setUncontrolledFormData } = uncontrolledFormSlice.actions;
 export const { setHookFormData } = hookFormSlice.actions;
+export const { setHookFormSubmitData } = hookFormSubmitDataSlice.actions;
 
 export const store = configureStore({
   reducer: {
     uncontrolledFormData: uncontrolledFormSlice.reducer,
     hookFormData: hookFormSlice.reducer,
+    hookFormSubmitData: hookFormSubmitDataSlice.reducer,
     countries: countriesSlice.reducer,
   },
 });

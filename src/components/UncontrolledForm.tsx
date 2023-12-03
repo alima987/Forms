@@ -4,6 +4,7 @@ import { setUncontrolledFormData } from '../redux/store';
 import { RootState } from '../redux/store';
 import { useNavigate } from 'react-router-dom';
 import * as Yup from 'yup';
+import './UncontrolledForm.css';
 
 const validationSchema = Yup.object().shape({
   name: Yup.string()
@@ -25,31 +26,25 @@ const validationSchema = Yup.object().shape({
     .oneOf([Yup.ref('password')], 'Passwords must match'),
   gender: Yup.string().required('Gender is required'),
   agreeTerms: Yup.boolean().oneOf([true], 'You must agree to the Terms'),
-  image: Yup.mixed()
-    .test('fileSize', 'File size is too large. Maximum is 1MB.', (value) => {
-      if (!value) return true;
-      const file = value as File;
-      return file.size <= 1024 * 1024;
-    })
-    .test('fileType', 'Invalid file type. Only PNG and JPEG are allowed.', (value) => {
-      if (!value) return true;
-      const file = value as File;
-      return ['image/png', 'image/jpeg'].includes(file.type);
-    })
-    .nullable(),
+  image: Yup.mixed<FileList>().test(
+    'required',
+    'Required field!',
+    (files) => !files || (files?.length > 0 && !!files)
+  ),
   country: Yup.string().required('Country is required'),
 });
 
 const UncontrolledForm: React.FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [previewImage, setPreviewImage] = useState<string>('');
   const uncontrolledFormData = useSelector((state: RootState) => state.uncontrolledFormData);
   const countries = useSelector((state: RootState) => state.countries);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const passwordRef = useRef<HTMLInputElement>(null);
   const confirmPasswordRef = useRef<HTMLInputElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type } = event.target;
@@ -63,11 +58,8 @@ const UncontrolledForm: React.FC = () => {
   };
   const handlePasswordChange = () => {};
 
-  const handleFileChange = () => {};
-
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-
     try {
       await validationSchema.validate(uncontrolledFormData, { abortEarly: false });
       setErrors({});
@@ -83,6 +75,18 @@ const UncontrolledForm: React.FC = () => {
         });
       }
       setErrors(errorsObj);
+    }
+  };
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64Image = reader.result as string;
+        setPreviewImage(base64Image);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -188,7 +192,6 @@ const UncontrolledForm: React.FC = () => {
             />
             Agree to Terms
           </label>
-          {errors.agreeTerms && <div style={{ color: 'red' }}>{errors.agreeTerms}</div>}
         </div>
         <div>
           <label htmlFor="country">Country:</label>
@@ -211,13 +214,17 @@ const UncontrolledForm: React.FC = () => {
           <label htmlFor="image">Upload Image:</label>
           <input
             type="file"
-            id="image"
-            name="image"
-            onChange={handleFileChange}
             ref={fileInputRef}
-            accept=".png, .jpeg"
+            accept=".png, .jpeg, .jpg"
+            onChange={handleFileChange}
           />
-          {errors.image && <div style={{ color: 'red' }}>{errors.image}</div>}
+          {previewImage && (
+            <img
+              src={previewImage}
+              alt="Preview"
+              style={{ maxWidth: '100px', maxHeight: '100px' }}
+            />
+          )}
         </div>
         <button type="submit">Submit</button>
       </form>

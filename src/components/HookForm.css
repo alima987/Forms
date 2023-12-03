@@ -1,3 +1,7 @@
+#root {
+  width: 100%;
+  margin: 0 auto;
+}
 form {
   max-width: 400px;
   margin: 0 auto;
@@ -29,4 +33,10 @@ button:disabled {
 
 .error {
   border: 1px solid red;
+}
+.new-data {
+  border: 2px solid green;
+  padding: 5px;
+  margin: 5px 0;
+  transition: border 0.5s ease;
 }
