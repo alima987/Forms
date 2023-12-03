@@ -28,11 +28,8 @@ const UncontrolledForm: React.FC = () => {
     const password = passwordRef.current?.value || '';
     const confirmPassword = confirmPasswordRef.current?.value || '';
 
-    // Проверка совпадения паролей
     if (password !== confirmPassword) {
-      // Обработка несовпадения паролей
     } else {
-      // Обработка совпадения паролей
     }
   };
 
@@ -41,16 +38,14 @@ const UncontrolledForm: React.FC = () => {
     const file = fileInput?.files?.[0];
 
     if (file) {
-      // Проверка размера и расширения файла, а затем сохранение в хранилище Redux в формате base64
       const fileSize = file.size;
       const fileExtension = file.name.split('.').pop()?.toLowerCase();
 
       if (fileSize > 1024 * 1024 || !(fileExtension === 'png' || fileExtension === 'jpeg')) {
-        // Обработка недопустимого файла
         alert(
           'Invalid file. Please upload a file with size less than 1MB and in PNG or JPEG format.'
         );
-        fileInput.value = ''; // Очистить значение ввода
+        fileInput.value = '';
       } else {
         const reader = new FileReader();
         reader.onloadend = () => {
@@ -64,11 +59,8 @@ const UncontrolledForm: React.FC = () => {
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
 
-    // Добавляем логику для сохранения данных в хранилище
-    // Это пример. Реальную логику нужно адаптировать к вашим требованиям
     dispatch(setUncontrolledFormData(uncontrolledFormData));
 
-    // Переходим на главную страницу
     navigate('/');
   };
   return (
